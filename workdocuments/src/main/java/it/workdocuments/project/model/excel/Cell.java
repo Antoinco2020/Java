@@ -1,15 +1,14 @@
-package it.workdocuments.project.model;
+package it.workdocuments.project.model.excel;
 
 import it.workdocuments.project.enums.CellType;
+import it.workdocuments.project.model.excel.style.CellStyle;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.poi.ss.usermodel.CellStyle;
 
 @Getter
 @Setter
 public class Cell {
     private int cellNumber;
-    private CellType cellType;
     private Object value;
     private String formula;
     private CellStyle headerStyle;
@@ -17,7 +16,6 @@ public class Cell {
 
     public Cell(CellBuilder builder){
         this.cellNumber = builder.cellNumber;
-        this.cellType = builder.cellType;
         this.value = builder.value;
         this.formula = builder.formula;
         this.headerStyle = builder.headerStyle;
@@ -26,7 +24,6 @@ public class Cell {
 
     public static class CellBuilder{
         private int cellNumber;
-        private CellType cellType;
         private Object value;
         private String formula;
         private CellStyle headerStyle;
@@ -34,10 +31,6 @@ public class Cell {
 
         public CellBuilder cellNumber(int cellNumber){
             this.cellNumber = cellNumber;
-            return this;
-        }
-        public CellBuilder cellType(CellType cellType){
-            this.cellType = cellType;
             return this;
         }
         public CellBuilder value(Object value){

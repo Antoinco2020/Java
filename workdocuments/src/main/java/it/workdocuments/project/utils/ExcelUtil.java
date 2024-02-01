@@ -3,11 +3,14 @@ package it.workdocuments.project.utils;
 import it.workdocuments.project.enums.FileAction;
 import it.workdocuments.project.enums.FileType;
 import it.workdocuments.project.model.Document;
-import it.workdocuments.project.model.ExcelFile;
-import it.workdocuments.project.model.ExcelWorkSheet;
-import org.apache.poi.hpsf.SummaryInformation;
+import it.workdocuments.project.model.excel.ExcelFile;
+import it.workdocuments.project.model.excel.ExcelWorkSheet;
+import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.DefaultIndexedColorMap;
+import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,17 +37,17 @@ public class ExcelUtil implements Document<ExcelFile> {
             for (ExcelWorkSheet workSheet : document.getWorkSheets()){
                 LOGGER.info("Process worksheet with name: {}", workSheet.getSheetName());
                 Sheet sheet = workbook.getSheet(workSheet.getSheetName());
-                List<it.workdocuments.project.model.Row> rows = new ArrayList<>();
+                List<it.workdocuments.project.model.excel.Row> rows = new ArrayList<>();
                 int rowCount = 0;
                 for(Row row : sheet){
                     LOGGER.info("Read line in position {}", rowCount);
-                    List<it.workdocuments.project.model.Cell> cells = new ArrayList<>();
+                    List<it.workdocuments.project.model.excel.Cell> cells = new ArrayList<>();
                     int cellCount = 0;
                     for (Cell cell : row) {
                         cells.add(getReadedCell(cell, cellCount));
                         cellCount++;
                     }
-                    rows.add(new it.workdocuments.project.model.Row.RowBuilder()
+                    rows.add(new it.workdocuments.project.model.excel.Row.RowBuilder()
                             .rowNumber(rowCount)
                             .cells(cells)
                             .build());
@@ -80,11 +83,11 @@ public class ExcelUtil implements Document<ExcelFile> {
                 LOGGER.info("Process the worksheet name: {}", workSheet.getSheetName().replace("/", "_"));
                 Sheet sheet = workbook.createSheet(workSheet.getSheetName().replace("/", "_"));
 
-                for(it.workdocuments.project.model.Row row : workSheet.getRows()){
+                for(it.workdocuments.project.model.excel.Row row : workSheet.getRows()){
                     LOGGER.info("Insert line in position {}", row.getRowNumber());
                     Row rowToWrite = sheet.createRow(row.getRowNumber());
-                    for(it.workdocuments.project.model.Cell cell : row.getCells()){
-                        insertCell(rowToWrite, cell);
+                    for(it.workdocuments.project.model.excel.Cell cell : row.getCells()){
+                        insertCell(workbook, document.getFileType(), rowToWrite, cell, row.getRowNumber() == 0);
                     }
                     LOGGER.info("Line inserted correctly");
                     sheet.autoSizeColumn(row.getRowNumber());
@@ -158,13 +161,19 @@ public class ExcelUtil implements Document<ExcelFile> {
         return value;
 
     }
-    private void insertCell(Row row, it.workdocuments.project.model.Cell cellToInsert) {
+    private void insertCell(Workbook workbook, FileType fileType, Row row, it.workdocuments.project.model.excel.Cell cellToInsert, boolean isHeader) {
         try {
             LOGGER.info("Create cell in position {}", cellToInsert.getCellNumber());
             org.apache.poi.ss.usermodel.Cell cell = row.createCell(cellToInsert.getCellNumber());
-            if(cellToInsert.getValueStyle() != null){
-                cell.setCellStyle(cellToInsert.getValueStyle());
+            if(isHeader && cellToInsert.getHeaderStyle() != null){
+                LOGGER.info("Is header cell");
+                cell.setCellStyle(setCellStyle(workbook, fileType, cellToInsert.getHeaderStyle()));
             }
+            else if(!isHeader && cellToInsert.getValueStyle() != null){
+                LOGGER.info("Is not header cell");
+                cell.setCellStyle(setCellStyle(workbook, fileType, cellToInsert.getValueStyle()));
+            }
+
 
             if(!Objects.isNull(cellToInsert.getFormula()) && !cellToInsert.getFormula().isEmpty()){
                 cell.setCellFormula(cellToInsert.getFormula());
@@ -178,6 +187,9 @@ public class ExcelUtil implements Document<ExcelFile> {
             }
             else if(cellToInsert.getValue() instanceof Double){
                 cell.setCellValue((Double) cellToInsert.getValue());
+            }
+            else if(cellToInsert.getValue() instanceof Integer){
+                cell.setCellValue(Double.valueOf((Integer) cellToInsert.getValue()));
             }
             else if(cellToInsert.getValue() instanceof Date){
                 cell.setCellValue((Date) cellToInsert.getValue());
@@ -198,14 +210,75 @@ public class ExcelUtil implements Document<ExcelFile> {
             throw e;
         }
     }
-    private it.workdocuments.project.model.Cell getReadedCell(Cell cell, int cellCount) {
+    private it.workdocuments.project.model.excel.Cell getReadedCell(Cell cell, int cellCount) {
         LOGGER.debug("Read cell in position {}", cellCount);
-        it.workdocuments.project.model.Cell readedCell = new it.workdocuments.project.model.Cell.CellBuilder()
+        it.workdocuments.project.model.excel.Cell readedCell = new it.workdocuments.project.model.excel.Cell.CellBuilder()
                 .cellNumber(cellCount).value(getCellValueForType(cell)).build();
         if(cell.getCellType() == CellType.FORMULA){
             readedCell.setFormula(cell.getCellFormula());
         }
         LOGGER.debug("Excel Cell read, the value is: {}", readedCell.getValue());
         return readedCell;
+    }
+    private CellStyle setCellStyle(Workbook workbook, FileType fileType, it.workdocuments.project.model.excel.style.CellStyle cellStyle){
+        CellStyle cellStyleToAdd = null;
+        try {
+            LOGGER.info("Set the cell style");
+            cellStyleToAdd = workbook.createCellStyle();
+            if(cellStyle.getAlignment() != null){
+                if(cellStyle.getAlignment().getHorizontalAlignment() != null){
+                    cellStyleToAdd.setAlignment(cellStyle.getAlignment().getHorizontalAlignment());
+                }
+                if(cellStyle.getAlignment().getVerticalAlignment() != null){
+                    cellStyleToAdd.setVerticalAlignment(cellStyle.getAlignment().getVerticalAlignment());
+                }
+            }
+            if(cellStyle.getBorderTop() != null){
+                cellStyleToAdd.setBorderTop(cellStyle.getBorderTop());
+            }
+            if(cellStyle.getBorderBottom() != null){
+                cellStyleToAdd.setBorderBottom(cellStyle.getBorderBottom());
+            }
+            if(cellStyle.getBorderLeft() != null){
+                cellStyleToAdd.setBorderLeft(cellStyle.getBorderLeft());
+            }
+            if(cellStyle.getBorderRight() != null){
+                cellStyleToAdd.setBorderRight(cellStyle.getBorderRight());
+            }
+            if(cellStyle.getBackgroundColor() != null){
+                cellStyleToAdd.setFillBackgroundColor(cellStyle.getBackgroundColor().getFillBackgroundColor().getIndex());
+                cellStyleToAdd.setFillForegroundColor(cellStyle.getBackgroundColor().getFillForegroundColor().getIndex());
+                cellStyleToAdd.setFillPattern(cellStyle.getBackgroundColor().getFillPatternType());
+            }
+
+            if(cellStyle.getFont() != null){
+                Font font = workbook.createFont();
+                font.setBold(cellStyle.getFont().isBold());
+                if(!Objects.isNull(cellStyle.getFont().getFontName())){
+                    font.setFontName(cellStyle.getFont().getFontName());
+                }
+                font.setItalic(cellStyle.getFont().isItalicFont());
+                font.setStrikeout(cellStyle.getFont().isStrikeoutText());
+                if(cellStyle.getFont().getFontHeight() != 0){
+                    font.setFontHeight(cellStyle.getFont().getFontHeight());
+                }
+                if(cellStyle.getFont().getTypeOffset() != 0){
+                    font.setTypeOffset(cellStyle.getFont().getTypeOffset());
+                }
+                if(cellStyle.getFont().getColor() != null){
+                    font.setColor(cellStyle.getFont().getColor().getIndex());
+                }
+                if(cellStyle.getFont().getUnderline() != null){
+                    font.setUnderline(cellStyle.getFont().getUnderline().getByteValue());
+                }
+                cellStyleToAdd.setFont(font);
+            }
+        }
+        catch (Exception e){
+            LOGGER.error("Error setCellStyle. Details: ", e);
+            throw e;
+        }
+        LOGGER.info("End to set cell style");
+        return cellStyleToAdd;
     }
 }

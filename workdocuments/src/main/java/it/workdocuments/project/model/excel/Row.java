@@ -1,4 +1,4 @@
-package it.workdocuments.project.model;
+package it.workdocuments.project.model.excel;
 
 import lombok.Getter;
 import lombok.Setter;

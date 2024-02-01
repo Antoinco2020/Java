@@ -8,7 +8,7 @@ import java.util.Objects;
 
 @Getter
 @Setter
-class File {
+public class File {
 
     private String fileName;
     private FileType fileType;

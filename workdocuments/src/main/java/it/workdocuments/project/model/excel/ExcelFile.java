@@ -1,6 +1,7 @@
-package it.workdocuments.project.model;
+package it.workdocuments.project.model.excel;
 
 import it.workdocuments.project.enums.FileType;
+import it.workdocuments.project.model.File;
 import lombok.Getter;
 import lombok.Setter;
 import java.util.*;
