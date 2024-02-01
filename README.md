@@ -1,2 +1,2 @@
-# work-documents
-Work with multiple type of document
+# java
+Contains the java example projects
