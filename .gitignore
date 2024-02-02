@@ -94,3 +94,5 @@ logs.txt
 logs.txt.*
 logs/**/*.lck
 workDocuments.log
+
+.mvn/**/wrapper
