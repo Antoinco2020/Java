@@ -77,6 +77,7 @@ public class MapperConfig {
     };
     PropertyMap<Review, ReviewDto> review = new PropertyMap<>() {
         protected void configure() {
+            map().setId(source.getId());
             map().setDescription(source.getDescription());
             map().setDate(source.getDate());
             map().setVote(source.getVote());

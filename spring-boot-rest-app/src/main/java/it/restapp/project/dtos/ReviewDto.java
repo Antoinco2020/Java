@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class ReviewDto {
+    private Long id;
     private LocalDateTime date;
     private int vote;
     private String description;

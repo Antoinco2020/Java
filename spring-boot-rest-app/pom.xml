@@ -20,6 +20,8 @@
 		<jasypt.version>3.0.5</jasypt.version>
 		<modelmapper.version>3.1.1</modelmapper.version>
 		<jackson-datatype.version>2.15.1</jackson-datatype.version>
+		<jakarta.mail.version>2.0.1</jakarta.mail.version>
+		<crypt-util.version>1.0</crypt-util.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -71,6 +73,17 @@
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jsr310</artifactId>
 			<version>${jackson-datatype.version}</version>
+		</dependency>
+		<!-- Jakarta Mail API -->
+		<dependency>
+			<groupId>com.sun.mail</groupId>
+			<artifactId>jakarta.mail</artifactId>
+			<version>${jakarta.mail.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>it.crypt.project</groupId>
+			<artifactId>crypt-util</artifactId>
+			<version>${crypt-util.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
