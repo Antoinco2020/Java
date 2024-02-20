@@ -2,6 +2,7 @@ package it.restapp.project.dtos;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -9,7 +10,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class AuthorDto {
+public class AuthorDto extends RepresentationModel<AuthorDto> {
     private Long id;
     private String name;
     private String surname;

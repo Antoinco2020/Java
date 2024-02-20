@@ -22,6 +22,8 @@
 		<jackson-datatype.version>2.15.1</jackson-datatype.version>
 		<jakarta.mail.version>2.0.1</jakarta.mail.version>
 		<crypt-util.version>1.0</crypt-util.version>
+		<springdoc-openapi.version>2.3.0</springdoc-openapi.version>
+		<spring-boot-hateoas.version>3.2.2</spring-boot-hateoas.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -84,6 +86,16 @@
 			<groupId>it.crypt.project</groupId>
 			<artifactId>crypt-util</artifactId>
 			<version>${crypt-util.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>${springdoc-openapi.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-hateoas</artifactId>
+			<version>${spring-boot-hateoas.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

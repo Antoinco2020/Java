@@ -1,5 +1,11 @@
 package it.restapp.project.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import it.restapp.project.dtos.AuthorDto;
 import it.restapp.project.dtos.ReviewDto;
 import it.restapp.project.service.ReviewService;
 import org.slf4j.Logger;
@@ -12,6 +18,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 @RequestMapping("/api/v1/review")
 public class ReviewController {
@@ -19,6 +28,16 @@ public class ReviewController {
     @Autowired
     private ReviewService reviewService;
 
+    @Operation(summary = "Insert review")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Review created",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = AuthorDto.class)) }),
+            @ApiResponse(responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content)
+    })
     @PostMapping(value = "insert", produces = "application/json")
     public ResponseEntity<ReviewDto> insertReview(@RequestBody ReviewDto review) {
         try {
@@ -27,6 +46,8 @@ public class ReviewController {
             if (review.getId() == null || review.getId() == 0)
                 throw new NullPointerException("Review not inserted");
 
+            review.add(linkTo(methodOn(ReviewController.class)
+                    .insertReview(review)).withSelfRel());
             return new ResponseEntity<>(review, HttpStatus.CREATED);
         }
         catch (Exception e){
